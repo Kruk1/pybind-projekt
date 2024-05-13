@@ -15,7 +15,7 @@ int add(int i, int j) {
     return i + j;
 }
 
-double generate_signal(double frequency, double freq_samp, int samp, int choose)
+double generate_signal(double frequency, double freq_samp, int samp, int choose, float b = 0)
 {
     double res;
     double phase = fmod(samp * 2 * M_PI * frequency / freq_samp, 2 * M_PI);
@@ -36,7 +36,11 @@ double generate_signal(double frequency, double freq_samp, int samp, int choose)
     }
     else if (choose == 4)
     {
-        res = cos(phase);
+        res = fmod(samp * 2 * frequency / freq_samp + 1, 2) + (b - 1);
+        if (res >= 0.0)
+            res = 1;
+        else
+            res = 0;
         return res;
     }
 }
@@ -64,7 +68,7 @@ PYBIND11_MODULE(_core, m) {
            add
            subtract
     )pbdoc";
-    
+
     m.def("generate_signal", &generate_signal, R"pbdoc(
         Subtract two numbers
 
