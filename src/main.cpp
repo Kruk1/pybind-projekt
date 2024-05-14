@@ -13,39 +13,43 @@
 
 namespace py = pybind11;
 using namespace matplot;
+using namespace std;
 
 int add(int i, int j) {
     return i + j;
 }
 
-double generate_signal(double frequency, double freq_samp, int samp, int choose, float b = 0)
+std::list<double>* generate_signal(double frequency, double freq_samp, std::list<int> samp, int choose, float b = 0)
 {
-    double res;
-    double phase = fmod(samp * 2 * M_PI * frequency / freq_samp, 2 * M_PI);
-    if (choose == 1)
+    int s = size(samp);
+    list<double>* res = new list<double>[s];
+    for (int i = 0; i < s; i++)
     {
-        res = sin(phase);
-        return res;
+        int curr_sample = samp.front();
+        double phase = fmod(curr_sample * 2 * M_PI * frequency / freq_samp, 2 * M_PI);
+        if (choose == 1)
+        {
+            res->push_back(sin(phase));
+        }
+        else if (choose == 2)
+        {
+            res->push_back(cos(phase));
+        }
+        else if (choose == 3)
+        {
+            res->push_back(fmod(curr_sample * 2 * frequency / freq_samp + 1, 2) - 1);
+        }
+        else if (choose == 4)
+        {
+            double con = fmod(curr_sample * 2 * frequency / freq_samp + 1, 2) + (b - 1);
+            if (con >= 0.0)
+                res->push_back(1);
+            else
+                res->push_back(0);
+        }
+        samp.pop_front();
     }
-    else if(choose == 2)
-    {
-        res = cos(phase);
-        return res;
-    }
-    else if (choose == 3)
-    {
-        res = fmod(samp * 2 * frequency / freq_samp + 1, 2) - 1;
-        return res;
-    }
-    else if (choose == 4)
-    {
-        res = fmod(samp * 2 * frequency / freq_samp + 1, 2) + (b - 1);
-        if (res >= 0.0)
-            res = 1;
-        else
-            res = 0;
-        return res;
-    }
+    return res;
 }
 
 void show_plot(std::vector<double> x, std::vector<double> y)
@@ -58,13 +62,11 @@ void show_plot(std::vector<double> x, std::vector<double> y)
     show();
 }
 
-const double PI = atan(1.0) * 4;
-
 std::list<complex<double>> *dft(std::list<complex<double>> input) {
 	double s = size(input);
 	std::list<complex<double>>* result = new std::list<complex<double>>[s];
 	complex<double> ret,roundret;
-	complex<double> pow = -2i * PI;
+	complex<double> pow = -2i * M_PI;
 	
 	int nr = 0;
 	double j = 0;
@@ -88,7 +90,7 @@ std::list<complex<double>> *inverse_transform(std::list<complex<double>> input) 
 	double s = size(input);
 	list<complex<double>>* result = new list<complex<double>>[s];
 	complex<double> ret, roundret;
-	complex<double> pow = 2i * PI;
+	complex<double> pow = 2i * M_PI;
 
 	int nr = 0;
 	double j = 0;
@@ -105,6 +107,24 @@ std::list<complex<double>> *inverse_transform(std::list<complex<double>> input) 
 		nr++;
 	}
 	return result;
+}
+
+std::list<double>* generate_signal_noise(int num, double seed)
+{ 
+    list<double>* res = new list<double>[num];
+    double m = pow(2, 31); 
+    double a = 1103515245; 
+    double c = 12243; 
+    
+    double x = fmod(seed, m); 
+
+    for (int i = 0; i < num; i++)
+    {
+        x = fmod(a * x + c, m);
+        res->push_back(x / m);
+    }
+   
+    return res; 
 }
 
 PYBIND11_MODULE(_core, m) {
@@ -137,6 +157,7 @@ PYBIND11_MODULE(_core, m) {
 
     m.def("inverse_transform", &inverse_transform);
 
+    m.def("generate_signal_noise", &generate_signal_noise);
    
     m.attr("__version__") = "dev";
 }
