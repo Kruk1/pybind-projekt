@@ -1,9 +1,12 @@
 #define _USE_MATH_DEFINES
 #include <cmath>
+#include <list>
+#include <complex>
 #include <pybind11/pybind11.h>
 #include <pybind11/embed.h>
 #include <matplot/matplot.h>
 #include <pybind11/stl.h>
+#include <pybind11/complex.h>
 
 #define STRINGIFY(x) #x
 #define MACRO_STRINGIFY(x) STRINGIFY(x)
@@ -55,6 +58,55 @@ void show_plot(std::vector<double> x, std::vector<double> y)
     show();
 }
 
+const double PI = atan(1.0) * 4;
+
+std::list<complex<double>> *dft(std::list<complex<double>> input) {
+	double s = size(input);
+	std::list<complex<double>>* result = new std::list<complex<double>>[s];
+	complex<double> ret,roundret;
+	complex<double> pow = -2i * PI;
+	
+	int nr = 0;
+	double j = 0;
+	for (double i = 0; i < s;i++) {
+		j = 0;
+		ret = 0;
+		roundret = 0;
+		for (complex<double> z : input) {
+			ret += z * exp(pow * i * j / s);
+			j++;
+		}
+		roundret = (round(real(ret))+round(imag(ret))*1i);
+		result->push_back(roundret);
+		nr++;
+
+	}
+	return result;
+}
+
+std::list<complex<double>> *inverse_transform(std::list<complex<double>> input) {
+	double s = size(input);
+	list<complex<double>>* result = new list<complex<double>>[s];
+	complex<double> ret, roundret;
+	complex<double> pow = 2i * PI;
+
+	int nr = 0;
+	double j = 0;
+	for (double i = 0; i < s;i++) {
+		j = 0;
+		ret = 0;
+		roundret = 0;
+		for (complex<double> z : input) {
+			ret += 1 / s * z * exp(pow * i * j / s);
+			j++;
+		}
+		roundret = (round(real(ret)) + round(imag(ret)) * 1i);
+		result->push_back(roundret);
+		nr++;
+	}
+	return result;
+}
+
 PYBIND11_MODULE(_core, m) {
     m.doc() = R"pbdoc(
         Pybind11 example plugin
@@ -80,6 +132,11 @@ PYBIND11_MODULE(_core, m) {
 
         Some other explanation about the subtract function.
     )pbdoc");
+
+    m.def("dft", &dft);
+
+    m.def("inverse_transform", &inverse_transform);
+
    
     m.attr("__version__") = "dev";
 }
