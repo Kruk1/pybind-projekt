@@ -15,10 +15,6 @@ namespace py = pybind11;
 using namespace matplot;
 using namespace std;
 
-int add(int i, int j) {
-    return i + j;
-}
-
 std::list<double>* generate_signal(double frequency, double freq_samp, std::list<int> samp, int choose, float b = 0)
 {
     int s = size(samp);
@@ -128,30 +124,10 @@ std::list<double>* generate_signal_noise(int num, double seed)
 }
 
 PYBIND11_MODULE(_core, m) {
-    m.doc() = R"pbdoc(
-        Pybind11 example plugin
-        -----------------------
 
-        .. currentmodule:: scikit_build_example
+    m.def("generate_signal", &generate_signal);
 
-        .. autosummary::
-           :toctree: _generate
-
-           add
-           subtract
-    )pbdoc";
-
-    m.def("generate_signal", &generate_signal, R"pbdoc(
-        Subtract two numbers
-
-        Some other explanation about the subtract function.
-    )pbdoc");
-
-    m.def("show_plot", &show_plot, R"pbdoc(
-        Subtract two numbers
-
-        Some other explanation about the subtract function.
-    )pbdoc");
+    m.def("show_plot", &show_plot);
 
     m.def("dft", &dft);
 
