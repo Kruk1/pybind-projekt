@@ -135,6 +135,11 @@ std::list<double>* generate_signal_noise(int num, double seed)
     return res; 
 }
 
+void visualization(list<int> file){
+    plot(file);
+    show();
+}
+
 PYBIND11_MODULE(_core, m) {
 
     m.def("generate_signal", &generate_signal);
