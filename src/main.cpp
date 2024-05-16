@@ -135,7 +135,7 @@ std::list<double>* generate_signal_noise(int num, double seed)
     return res; 
 }
 
-void visualization(list<int> file){
+void visualization(list<double> file){
     plot(file);
     show();
 }
