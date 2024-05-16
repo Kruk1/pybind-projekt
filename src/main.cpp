@@ -154,5 +154,7 @@ PYBIND11_MODULE(_core, m) {
 
     m.def("modulo", &modulo);
    
+    m.def("visualization", &visualization);
+
     m.attr("__version__") = "dev";
 }
