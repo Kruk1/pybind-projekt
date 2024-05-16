@@ -61,7 +61,7 @@ void show_plot(std::vector<double> x, std::vector<double> y)
 std::list<complex<double>> *dft(std::list<complex<double>> input) {
 	double s = size(input);
 	std::list<complex<double>>* result = new std::list<complex<double>>[s];
-	complex<double> ret,roundret;
+	complex<double> ret;
 	complex<double> pow = -2i * M_PI;
 	
 	int nr = 0;
@@ -69,37 +69,49 @@ std::list<complex<double>> *dft(std::list<complex<double>> input) {
 	for (double i = 0; i < s;i++) {
 		j = 0;
 		ret = 0;
-		roundret = 0;
 		for (complex<double> z : input) {
 			ret += z * exp(pow * i * j / s);
 			j++;
 		}
-		roundret = (round(real(ret))+round(imag(ret))*1i);
-		result->push_back(roundret);
+		result->push_back(ret);
 		nr++;
 
 	}
 	return result;
 }
 
-std::list<complex<double>> *inverse_transform(std::list<complex<double>> input) {
+std::list<double>* modulo(std::list<complex<double>> input) {
 	double s = size(input);
-	list<complex<double>>* result = new list<complex<double>>[s];
-	complex<double> ret, roundret;
+	std::list<double>* result = new std::list<double>[s];
+
+	for (int i = 0; i < s; i++) {
+		
+        int modul = sqrt(pow(real(input.front()), 2) + pow(imag(input.front()), 2));
+		result->push_back(modul);
+        input.pop_front();
+
+	}
+	return result;
+}
+
+std::list<double> *inverse_transform(std::list<complex<double>> input) {
+	double s = size(input);
+	list<double>* result = new list<double>[s];
+	complex<double> ret;
 	complex<double> pow = 2i * M_PI;
+    double res;
 
 	int nr = 0;
 	double j = 0;
 	for (double i = 0; i < s;i++) {
 		j = 0;
 		ret = 0;
-		roundret = 0;
 		for (complex<double> z : input) {
 			ret += 1 / s * z * exp(pow * i * j / s);
 			j++;
 		}
-		roundret = (round(real(ret)) + round(imag(ret)) * 1i);
-		result->push_back(roundret);
+		res = real(ret);
+		result->push_back(res);
 		nr++;
 	}
 	return result;
@@ -134,6 +146,8 @@ PYBIND11_MODULE(_core, m) {
     m.def("inverse_transform", &inverse_transform);
 
     m.def("generate_signal_noise", &generate_signal_noise);
+
+    m.def("modulo", &modulo);
    
     m.attr("__version__") = "dev";
 }
